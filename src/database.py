@@ -10,19 +10,19 @@ class Token(Base):
     __tablename__ = "tokens"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    ca = Column(String, unique=True, nullable=False)           # Contract address
-    ticker = Column(String)                                     # Token symbol
-    name = Column(String)                                       # Token name
-    migration_time = Column(DateTime)                           # When it graduated from pump.fun
-    liquidity_at_10k = Column(Float)                           # Liquidity when mcap hit 10k
-    liquidity_at_100k = Column(Float)                          # Liquidity when mcap hit 100k
-    ath = Column(Float)                                         # All time high mcap
-    ath_timestamp = Column(DateTime)                            # When ATH was reached
-    bundler_pct = Column(Float)                                 # % of supply bundled at launch
-    top10_holder_pct = Column(Float)                           # % held by top 10 wallets
-    time_before_dump = Column(Float)                           # Minutes from ATH to 80% drawdown
-    dumped = Column(Boolean, default=False)                    # Whether it dumped 80%+ from ATH
-    outcome = Column(String)                                    # Runner / Slow bleed / Instant dump
+    ca = Column(String, unique=True, nullable=False)
+    ticker = Column(String)
+    name = Column(String)
+    migration_time = Column(DateTime)
+    liquidity_at_10k = Column(Float)
+    liquidity_at_100k = Column(Float)
+    ath = Column(Float)
+    ath_timestamp = Column(DateTime)
+    bundler_pct = Column(Float)
+    top10_holder_pct = Column(Float)
+    time_before_dump = Column(Float)
+    dumped = Column(Boolean, default=False)
+    outcome = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 _engine = None
@@ -31,11 +31,19 @@ _Session = None
 def get_engine():
     global _engine
     if _engine is None:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        default_db = f"sqlite:///{os.path.join(base_dir, 'data', 'trenches.db')}"
-        db_url = os.getenv("DATABASE_URL", default_db)
+        db_url = os.getenv("DATABASE_URL", "")
+
+        # Railway PostgreSQL URL fix
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+        # No DATABASE_URL — use local SQLite
+        if not db_url:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            data_dir = os.path.join(base_dir, "data")
+            os.makedirs(data_dir, exist_ok=True)
+            db_url = f"sqlite:///{os.path.join(data_dir, 'trenches.db')}"
+
         _engine = create_engine(db_url)
     return _engine
 
