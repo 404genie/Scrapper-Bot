@@ -1,0 +1,7 @@
+python-telegram-bot==21.6
+aiohttp==3.9.5
+requests==2.32.3
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.9
+python-dotenv==1.0.1
+apscheduler==3.10.4
